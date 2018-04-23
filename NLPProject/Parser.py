@@ -8,4 +8,15 @@ dfnewtoxscore = tox.groupby('rev_id')['toxicity_score'].mean()
 df = pd.concat([comments, dfnewtox, dfnewtoxscore], axis=1)
 # print comments.query('rev_id == 2232.0')
 print comments.query('rev_id')
-df.to_csv('out.csv',sep='\t')
+dftrain = df.loc[df['split'] == 'train']
+dftest = df.loc[df['split'] == 'test']
+dfdev = df.loc[df['split'] == 'dev']
+
+dftrain = dftrain[['comment','toxicity','toxicity_score']]
+dftest = dftest[['comment','toxicity','toxicity_score']]
+dfdev = dfdev[['comment','toxicity','toxicity_score']]
+
+dftrain.to_csv('train.csv',sep='\t')
+dftest.to_csv('test.csv',sep='\t')
+dfdev.to_csv('dev.csv',sep='\t')
+
