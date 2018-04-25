@@ -1,7 +1,7 @@
 import pandas as pd
 
-comments = pd.DataFrame.from_csv('toxicity_annotated_comments.tsv', sep='\t');
-tox = pd.DataFrame.from_csv('toxicity_annotations.tsv', sep='\t');
+comments = pd.DataFrame.from_csv('data/toxicity_annotated_comments.tsv', sep='\t');
+tox = pd.DataFrame.from_csv('data/toxicity_annotations.tsv', sep='\t');
 # print tox['rev_id'].count();
 dfnewtox = tox.groupby('rev_id')['toxicity'].mean()
 dfnewtoxscore = tox.groupby('rev_id')['toxicity_score'].mean()
@@ -16,7 +16,7 @@ dftrain = dftrain[['comment','toxicity','toxicity_score']]
 dftest = dftest[['comment','toxicity','toxicity_score']]
 dfdev = dfdev[['comment','toxicity','toxicity_score']]
 
-dftrain.to_csv('train.csv',sep='\t')
-dftest.to_csv('test.csv',sep='\t')
-dfdev.to_csv('dev.csv',sep='\t')
+dftrain.to_csv('data/train.csv',sep='\t')
+dftest.to_csv('data/test.csv',sep='\t')
+dfdev.to_csv('data/dev.csv',sep='\t')
 
