@@ -11,13 +11,23 @@ print("Loading data...")
 train_data ,train_labels = read.load_data("data/train.csv")
 dev_data,dev_labels = read.load_data("data/dev.csv")
 train_labels=np.array(train_labels);
-# train_labels=train_labels.T;
 
 max_document_length = max([len(x.split(" ")) for x in train_data])
 vocab_processor = learn.preprocessing.VocabularyProcessor(max_document_length)
+
 x_train = np.array(list(vocab_processor.fit_transform(train_data)))
 x_dev = np.array(list(vocab_processor.fit_transform(dev_data)))
-print len(x_train)
+print "agrgdfygukh,  ",x_train.shape
+np.random.seed(10)
+shuffle_indices = np.random.permutation(np.arange(len(train_labels)))
+x_shuffled = x_train[shuffle_indices]
+y_shuffled = train_labels[shuffle_indices]
+
+dev_sample_index = -1 * int(Config.dev_sample_percentage * float(len(train_labels)))
+x_train, x_dev = x_shuffled[:dev_sample_index], x_shuffled[dev_sample_index:]
+y_train, y_dev = y_shuffled[:dev_sample_index], y_shuffled[dev_sample_index:]
+del x_shuffled,y_shuffled
+print len(train_labels)
 print "done loading data"
 
 with tf.Graph().as_default():
@@ -30,7 +40,7 @@ with tf.Graph().as_default():
 
         cnn = CNN.CNN(
             sequence_length=x_train.shape[1],
-            num_classes=train_labels.shape[0],
+            num_classes=y_train.shape[0],
             vocab_size=len(vocab_processor.vocabulary_),
             embedding_size=Config.embedding_dim,
             filter_sizes=list(map(int, Config.filter_sizes.split(","))),
@@ -132,11 +142,13 @@ with tf.Graph().as_default():
             # Generate batches
             # batches = read.batch_iteration(
             #     list(zip(x_train, train_labels)), Config.batch_size, Config.num_epochs)
-            batches = read.batch_iteration(x_train, train_labels, Config.batch_size, Config.num_epochs)
+            batches = read.batch_iteration(x_train, y_train, Config.batch_size, Config.num_epochs)
 
             # Training loop. For each batch...
             for batch in batches:
-                x_batch, y_batch = batch[0],batch[1]
+                # x_batch, y_batch = batch[0],batch[1]
+                x_batch, y_batch = zip(*batch)
+
                 print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
                 print len(y_batch)
                 train_step(x_batch, y_batch)

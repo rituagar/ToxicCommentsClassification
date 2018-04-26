@@ -21,30 +21,42 @@ def load_data(filename):
         # print(train_labels)
     return [data,labels]
 
-def batch_iteration(trainFeats,trainLabels,batch_size,no_epochs):
+def batch_iteration(trainFeats,trainLabels,batch_size,no_epochs,shuffle=True):
 
     # explicitly feeding keep_prob as well
     # feed_dict = {self.train_inputs: batch_inputs, self.train_labels: batch_labels, self.keep_prob: 0.5}
 
     # data=np.array(data);
     # dataSize = len(data);
-    numBatchesPerEpoch = int((len(trainFeats)+len(trainLabels)-1)/Config.batch_size)+1;
+    data = list(zip(trainFeats, trainLabels))
+    data_size = len(data)
+    num_batches_per_epoch = int((len(trainFeats)-1)/Config.batch_size)+1;
     batchTrainList = []
+    if shuffle:
+        shuffle_indices = np.random.permutation(np.arange(data_size))
+        shuffled_data = data[shuffle_indices]
+    else:
+        shuffled_data = data
 
-    for epoch in xrange(no_epochs):
-        # for batchNum in xrange(numBatchesPerEpoch):
-            start = (epoch * batch_size) % len(trainFeats)
-            end = ((epoch + 1) * batch_size) % len(trainFeats)
-            print "start is:",start;
-            print "end is:",end;
-            if end < start:
-                start -= end
-                end = len(trainFeats)
-            batch_inputs, batch_labels = trainFeats[start:end], trainLabels[start:end]
-            batchTrainList.append([batch_inputs,batch_labels])
+    for batch_num in range(num_batches_per_epoch):
+        start_index = batch_num * batch_size
+        end_index = min((batch_num + 1) * batch_size, data_size)
+        yield shuffled_data[start_index:end_index]
+
+    # for epoch in xrange(num_batches_per_epoch):
+    #     # for batchNum in xrange(numBatchesPerEpoch):
+    #         start = (epoch * batch_size) % len(trainFeats)
+    #         end = ((epoch + 1) * batch_size) % len(trainFeats)
+    #         print "start is:",start;
+    #         print "end is:",end;
+    #         if end < start:
+    #             start -= end
+    #             end = len(trainFeats)
+    #         batch_inputs, batch_labels = trainFeats[start:end], trainLabels[start:end]
+    #         batchTrainList.append([batch_inputs,batch_labels])
     print "bliiiiiiiiiiiiiiiiiiiiiii"
 
-    return batchTrainList;
+    # return batchTrainList;
             # yield data[startIndex:endIndex];
 
 

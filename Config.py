@@ -12,4 +12,5 @@ allow_soft_placement=True
 log_device_placement=False
 checkpoint_dir= ""
 eval_train= False
+dev_sample_percentage = 0.1
 
