@@ -11,15 +11,24 @@ def load_data(filename):
     for line in lines:
         data.append(line.split("\t")[1])
         tempLabel = line.split("\t")[2]
-        if float(tempLabel)>0.5:
-            tempLabel = 1.0;
-        else:
-            tempLabel = 0.0;
-            labels.append(tempLabel)
+        # if float(tempLabel)>0.5:
+        #     tempLabel = 1.0;
+        # else:
+        #     tempLabel = 0.0;
+        labels.append(tempLabel)
         # tokens.append(word_tokenize(line))
         # print(train_data)
         # print(train_labels)
+    count=0;
+    for i in xrange(len(data)):
+        if(i>=1):
+            print data[-i]
+            count = count+1;
+            if(count == 5):
+                break;
+        print len(labels)
     return [data,labels]
+load_data('data/train.csv')
 
 def batch_iteration(trainFeats,trainLabels,batch_size,no_epochs,shuffle=True):
 

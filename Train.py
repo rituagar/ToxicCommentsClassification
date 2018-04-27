@@ -10,24 +10,31 @@ import datetime
 print("Loading data...")
 train_data ,train_labels = read.load_data("data/train.csv")
 dev_data,dev_labels = read.load_data("data/dev.csv")
-train_labels=np.array(train_labels);
+print "$$$$$$$$$"
+print len(train_data)
+print "$$$$$$$$$"
+print len(train_labels)
+y_train=np.array(train_labels);
 
 max_document_length = max([len(x.split(" ")) for x in train_data])
 vocab_processor = learn.preprocessing.VocabularyProcessor(max_document_length)
 
 x_train = np.array(list(vocab_processor.fit_transform(train_data)))
 x_dev = np.array(list(vocab_processor.fit_transform(dev_data)))
-print "agrgdfygukh,  ",x_train.shape
-np.random.seed(10)
-shuffle_indices = np.random.permutation(np.arange(len(train_labels)))
-x_shuffled = x_train[shuffle_indices]
-y_shuffled = train_labels[shuffle_indices]
 
-dev_sample_index = -1 * int(Config.dev_sample_percentage * float(len(train_labels)))
-x_train, x_dev = x_shuffled[:dev_sample_index], x_shuffled[dev_sample_index:]
-y_train, y_dev = y_shuffled[:dev_sample_index], y_shuffled[dev_sample_index:]
-del x_shuffled,y_shuffled
-print len(train_labels)
+np.random.seed(10)
+# shuffle_indices = np.random.permutation(np.arange(len(train_labels)))
+# x_shuffled = x_train[shuffle_indices]
+# y_shuffled = train_labels[shuffle_indices]
+
+# dev_sample_index = -1 * int(Config.dev_sample_percentage * float(len(train_labels)))
+# x_train, x_dev = x_shuffled[:dev_sample_index], x_shuffled[dev_sample_index:]
+# y_train, y_dev = y_shuffled[:dev_sample_index], y_shuffled[dev_sample_index:]
+# print "After shuffle"
+# print x_train.shape
+# print "After shuffle"
+# print y_train.shape
+# del x_shuffled,y_shuffled
 print "done loading data"
 
 with tf.Graph().as_default():
