@@ -29,8 +29,9 @@ def load_data(filename):
         # print len(labels)
     # print len(data)
     # print len(labels)
-    data = data[:int(0.1*len(data))]
-    labels = labels[:int(0.1*len(labels))]
+    if(filename.find("dev")!=-1):
+        data = data[:int(0.1*len(data))]
+        labels = labels[:int(0.1*len(labels))]
     # print len(data)
     # print len(labels)
     return [data,labels]

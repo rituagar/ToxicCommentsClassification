@@ -11,6 +11,7 @@ num_checkpoints= 5
 allow_soft_placement=True
 log_device_placement=False
 checkpoint_dir= ""
-eval_train= False
+# eval_train= False
+eval_train= True
 dev_sample_percentage = 0.1
 

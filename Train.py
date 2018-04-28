@@ -10,10 +10,10 @@ import datetime
 print("Loading data...")
 train_data ,train_labels = read.load_data("data/train.csv")
 dev_data,dev_labels = read.load_data("data/dev.csv")
-print "$$$$$$$$$"
-print len(train_data)
-print "$$$$$$$$$"
-print len(train_labels)
+# print "$$$$$$$$$"
+# print len(train_data)
+# print "$$$$$$$$$"
+# print len(train_labels)
 y_train=np.array(train_labels);
 
 max_document_length = max([len(x.split(" ")) for x in train_data])
@@ -47,7 +47,7 @@ with tf.Graph().as_default():
 
         cnn = CNN.CNN(
             sequence_length=x_train.shape[1],
-            num_classes=y_train.shape[0],
+            num_classes=y_train.shape[1],
             vocab_size=len(vocab_processor.vocabulary_),
             embedding_size=Config.embedding_dim,
             filter_sizes=list(map(int, Config.filter_sizes.split(","))),
@@ -137,19 +137,26 @@ with tf.Graph().as_default():
                     cnn.input_y: y_batch,
                     cnn.dropout_keep_prob: 1.0
                 }
+                print "reachd here 1"
                 step, summaries, loss, accuracy = sess.run(
                     [global_step, dev_summary_op, cnn.loss, cnn.accuracy],
                     feed_dict)
+                print "reachd here 2"
+
                 time_str = datetime.datetime.now().isoformat()
+                print "reachd here 3"
+
                 print("{}: step {}, loss {:g}, acc {:g}".format(time_str, step, loss, accuracy))
+
+                print "reachd here 4"
                 if writer:
                     writer.add_summary(summaries, step)
 
             print "generating batches with labels"
             # Generate batches
-            # batches = read.batch_iteration(
-            #     list(zip(x_train, train_labels)), Config.batch_size, Config.num_epochs)
-            batches = read.batch_iteration(x_train, y_train, Config.batch_size, Config.num_epochs)
+            batches = read.batch_iteration(
+                list(zip(x_train, train_labels)), Config.batch_size, Config.num_epochs)
+            # batches = read.batch_iteration(x_train, y_train, Config.batch_size, Config.num_epochs)
 
             # Training loop. For each batch...
             for batch in batches:

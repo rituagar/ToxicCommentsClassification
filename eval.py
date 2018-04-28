@@ -11,12 +11,14 @@ if Config.eval_train:
     # x_raw, y_test = data_helpers.load_data_and_labels(Config.positive_data_file, Config.negative_data_file)
     x_raw, y_test = read.load_data('data/test.csv')
     y_test = np.argmax(y_test, axis=1)
+    # y_test = np.array(y_test)
 else:
     x_raw = ["a masterpiece four years in the making", "everything is off."]
     y_test = [1, 0]
 
 # Map data into vocabulary
-vocab_path = os.path.join(Config.checkpoint_dir, "..", "vocab")
+vocab_path = os.path.join(Config.checkpoint_dir, "runs","1524899169", "vocab")
+print vocab_path
 vocab_processor = learn.preprocessing.VocabularyProcessor.restore(vocab_path)
 x_test = np.array(list(vocab_processor.transform(x_raw)))
 
@@ -24,7 +26,9 @@ print("\nEvaluating...\n")
 
 # Evaluation
 # ==================================================
-checkpoint_file = tf.train.latest_checkpoint(Config.checkpoint_dir)
+# checkpoint_file = tf.train.latest_checkpoint(os.path.join(Config.checkpoint_dir,"runs"))
+checkpoint_file = "/home/rasmalai/PycharmProjects/NLPProject/runs/1524899169/checkpoints/model-100"
+print checkpoint_file
 graph = tf.Graph()
 with graph.as_default():
     session_conf = tf.ConfigProto(
