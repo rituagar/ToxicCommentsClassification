@@ -6,14 +6,12 @@ from tensorflow.contrib import rnn
 
 class CNN(object):
     """
-    A CNN for text classification.
+    A CNN RNN BiLSTM model for text classification.
     Uses an embedding layer, followed by a convolutional, max-pooling and softmax layer.
     """
     def __init__(
       self, sequence_length, num_classes, vocab_size,
       embedding_size, filter_sizes, num_filters, l2_reg_lambda=0.0):
-
-        # alphabet_size = 69
 
         print "making place holders"
         # Placeholders for input, output and dropout
@@ -32,18 +30,11 @@ class CNN(object):
         print "making embd layer"
         # Embedding layer
         with tf.device('/cpu:0'), tf.name_scope("embedding"):
-            # self.Q = tf.concat(
-            #     [
-            #         tf.zeros([1, alphabet_size]),  # Zero padding vector for out of alphabet characters
-            #         tf.one_hot(range(alphabet_size), alphabet_size, 1.0, 0.0)
-            #         # one-hot vector representation for alphabets
-            #     ], 0,
-            #     name='Q')
+
             self.W = tf.Variable(
                 tf.random_uniform([vocab_size, embedding_size], -1.0, 1.0),
                 name="W")
             self.embedded_chars = tf.nn.embedding_lookup(self.W, self.input_x)
-            # self.embedded_chars = tf.nn.embedding_lookup(self.Q, self.input_x)
             embedded_chars_expanded = tf.expand_dims(self.embedded_chars, -1)
 
         # Create a convolution + maxpool layer for each filter size
@@ -66,12 +57,6 @@ class CNN(object):
                 W = tf.Variable(tf.truncated_normal(filter_shape, stddev=0.1), name="W")
                 b = tf.Variable(tf.constant(0.1, shape=[num_filters]), name="b")
 
-                # conv = tf.nn.conv2d(
-                #     self.embedded_chars_expanded,
-                #     W,
-                #     strides=[1, 1, 1, 1],
-                #     padding="VALID",
-                #     name="conv")
                 conv = tf.nn.conv2d(
                     emb_pad,
                     W,
@@ -82,26 +67,12 @@ class CNN(object):
 
                 h = tf.nn.relu(tf.nn.bias_add(conv, b), name="relu")
 
-                # Maxpooling over the outputs
-                # pooled = tf.nn.max_pool(
-                #     h,
-                #     ksize=[1, sequence_length - filter_size + 1, 1, 1],
-                #     strides=[1, 1, 1, 1],
-                #     padding='VALID',
-                #     name="pool")
                 pooled = tf.nn.max_pool(h, ksize=[1, Config.max_pool_size, 1, 1], strides=[1, Config.max_pool_size, 1, 1],
                                         padding='SAME', name='pool')
                 pooled = tf.reshape(pooled, [-1, reduced, num_filters])
                 pooled_outputs.append(pooled)
         print "combining pool funcs"
         # Combine all the pooled features
-        # num_filters_total = num_filters * len(filter_sizes)
-        # print "num filtersssssssss:",num_filters_total
-        # self.h_pool = tf.concat(self.h_pool_flat, 2)
-        # self.h_pool_flat = tf.reshape(self.h_pool, [-1, num_filters_total])
-        # Add dropout
-        # with tf.name_scope("dropout"):
-            # self.h_drop = tf.nn.dropout(self.h_pool_flat, self.dropout_keep_prob)
 
         pooled_concat = tf.concat(pooled_outputs, 2)
         pooled_concat = tf.nn.dropout(pooled_concat, self.dropout_keep_prob)
@@ -127,10 +98,7 @@ class CNN(object):
 
         inputs = [tf.squeeze(input_, [1]) for input_ in
                   tf.split(pooled_concat, num_or_size_splits=int(reduced), axis=1)]
-        # outputs, state = tf.contrib.rnn.static_rnn(lstm_forward_cell, inputs, initial_state=self._initial_state,
-        #                                            sequence_length=self.real_len)
 
-        # with tf.name_scope("bw"), tf.variable_scope("bw"):
         outputs, _, _ = rnn.static_bidirectional_rnn(lstm_forward_cell_m, lstm_backward_cell_m, inputs,
                                                          initial_state_fw=self._initial_forward_state,
                                                          initial_state_bw=self._initial_backward_state, dtype=tf.float32,
@@ -143,7 +111,6 @@ class CNN(object):
         print "outputs shape is .............."
         print len(outputs)
         print "output shape is .............."
-        # print tf.Session().run(output.get_shape())
         with tf.variable_scope('Output'):
             tf.get_variable_scope().reuse_variables()
             one = tf.ones([1, Config.hidden_unit*2], tf.float32)
@@ -152,25 +119,19 @@ class CNN(object):
                 ind = tf.to_float(ind)
                 ind = tf.expand_dims(ind, -1)
                 print "ind shape is .............."
-                # print tf.Session().run(ind.get_shape())
                 mat = tf.matmul(ind, one)
                 print "mat shape is .............."
-                # print tf.Session().run(mat.get_shape())
                 output = tf.add(tf.multiply(output, mat), tf.multiply(outputs[i], 1.0 - mat))
 
         print "loss calculation"
         # Final (unnormalized) scores and predictions
         with tf.name_scope("output"):
-            # W = tf.get_variable(
-            #     "W",
-            #     shape=[num_filters_total, num_classes],
-            #     initializer=tf.contrib.layers.xavier_initializer())
+
             self.Wnew = tf.Variable(tf.truncated_normal([Config.hidden_unit*2, num_classes], stddev=0.1), name='W')
             b = tf.Variable(tf.constant(0.1, shape=[num_classes]), name="b")
 
             l2_loss += tf.nn.l2_loss(W)
             l2_loss += tf.nn.l2_loss(b)
-            # self.scores = tf.nn.xw_plus_b(self.h_drop, W, b, name="scores")
             self.scores = tf.nn.xw_plus_b(output, self.Wnew, b, name="scores")
             self.predictions = tf.argmax(self.scores, 1, name="predictions")
 

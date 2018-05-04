@@ -3,22 +3,16 @@ import numpy as np
 import ReadData as read
 import tensorflow as tf
 import Config
-import CNN
+import CNN_BiLSTM
 import time
 import os
 import datetime
 print("Loading data...")
 train_data ,train_labels = read.load_data("data/train.csv")
 dev_data,dev_labels = read.load_data("data/dev.csv")
-# print "$$$$$$$$$"
-# print len(train_data)
-# print "$$$$$$$$$"
-# print len(train_labels)
-y_train=np.array(train_labels);
 
+y_train=np.array(train_labels);
 max_document_length = max([len(x.split(" ")) for x in train_data])
-# print max_document_length;
-# exit(0)
 vocab_processor = learn.preprocessing.VocabularyProcessor(max_document_length)
 
 x_train = np.array(list(vocab_processor.fit_transform(train_data)))
@@ -34,7 +28,7 @@ with tf.Graph().as_default():
     with sess.as_default():
         print "starting cnn sess"
 
-        cnn = CNN.CNN(
+        cnn = CNN_BiLSTM.CNN(
             sequence_length=x_train.shape[1],
             num_classes=y_train.shape[1],
             vocab_size=len(vocab_processor.vocabulary_),
@@ -69,9 +63,7 @@ with tf.Graph().as_default():
         loss_summary = tf.summary.scalar("loss", cnn.loss)
         acc_summary = tf.summary.scalar("accuracy", cnn.accuracy)
         print "this is losssssssss"
-        # print sess.run(loss_summary)
         print "this is accuracyyyyyy"
-        # print sess.run(acc_summary)
 
         # Train Summaries
         train_summary_op = tf.summary.merge([loss_summary, acc_summary, grad_summaries_merged])
@@ -157,7 +149,6 @@ with tf.Graph().as_default():
             # Generate batches
             batches = read.batch_iteration(
                 list(zip(x_train, train_labels)), Config.batch_size, Config.num_epochs)
-            # batches = read.batch_iteration(x_train, y_train, Config.batch_size, Config.num_epochs)
 
             # Training loop. For each batch...
             for batch in batches:
